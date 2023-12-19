@@ -41,22 +41,26 @@ func main() {
 	result := 0
 	for _, game := range games {
 		test_games := func() {
+			max_blue := 0
 			for _, blue := range game.blue {
-				if blue > 14 {
-					return
+				if blue > max_blue {
+					max_blue = blue
 				}
 			}
+			max_red := 0
 			for _, red := range game.red {
-				if red > 12 {
-					return
+				if red > max_red {
+					max_red = red
 				}
 			}
+			max_green := 0
 			for _, green := range game.green {
-				if green > 13 {
-					return
+				if green > max_green {
+					max_green = green
 				}
 			}
-			result += game.id
+			result += max_blue * max_red * max_green
+			log.Println(max_blue * max_red * max_green)
 		}
 		test_games()
 	}
