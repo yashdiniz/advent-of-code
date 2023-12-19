@@ -49,31 +49,39 @@ func main() {
 		}
 	}
 
-	engine_nums_sum := 0
-	find_symbol := regexp.MustCompile("[^.0-9]")
+	engine_ratio_sum := 0
+	find_symbol := regexp.MustCompile("[*]")
 	for i, line := range lines {
 		// now for the 8-neighbour check
 		for _, symbol := range find_symbol.FindAllStringIndex(line, -1) {
+			var part_nums []int
 			ind := symbol[0]
 			for _, num := range numbers[i] {
 				if num.end == ind {
-					engine_nums_sum += num.num
+					part_nums = append(part_nums, num.num)
 				}
 				if num.start == ind+1 {
-					engine_nums_sum += num.num
+					part_nums = append(part_nums, num.num)
 				}
 			}
 			for _, num := range numbers[i-1] {
 				if ind >= num.start-1 && ind <= num.end {
-					engine_nums_sum += num.num
+					part_nums = append(part_nums, num.num)
 				}
 			}
 			for _, num := range numbers[i+1] {
 				if ind >= num.start-1 && ind <= num.end {
-					engine_nums_sum += num.num
+					part_nums = append(part_nums, num.num)
 				}
+			}
+			if len(part_nums) > 1 {
+				gear_rat := 1
+				for _, n := range part_nums {
+					gear_rat *= n
+				}
+				engine_ratio_sum += gear_rat
 			}
 		}
 	}
-	log.Println(engine_nums_sum)
+	log.Println(engine_ratio_sum)
 }
