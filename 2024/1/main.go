@@ -3,7 +3,6 @@ package main
 import (
 	"aoc2024/internal"
 	"log"
-	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -31,12 +30,18 @@ func main() {
 	})
 	// log.Print("list_b ", list_b)
 
-	// find the distance between the two lists
-	var distance float64 = 0
-	for i := 0; i < len(list_a); i++ {
-		distance += math.Abs(float64(list_a[i] - list_b[i]))
+	// find the similarity between the two lists
+	similarity := 0
+	for _, a := range list_a {
+		count := 0
+		for _, b := range list_b {
+			if a == b {
+				count++
+			}
+		}
+		similarity += count * a
 	}
-	log.Println("Final distance ", int(distance))
+	log.Println("Final similarity is ", similarity)
 }
 
 func parse(line string) []int {
