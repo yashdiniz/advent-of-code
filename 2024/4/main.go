@@ -10,62 +10,43 @@ func main() {
 	line_num := len(lines)
 	line_len := len(lines[0])
 
-	// transpose input to check vertical
-	lines_h := make([]string, line_len)
-	for i := 0; i < line_num; i++ {
-		for j := 0; j < line_len; j++ {
-			lines_h[i] += string(lines[j][i])
-		}
-	}
-
 	total := 0
-	for i := 0; i < line_num; i++ {
-		for j := 0; j < line_len-3; j++ {
-			// horizontal check
-			word := lines[i][j : j+4]
-			if word == "XMAS" || word == "SAMX" {
-				total++
-			}
-			// vertical check
-			word = lines_h[i][j : j+4]
-			if word == "XMAS" || word == "SAMX" {
-				total++
-			}
-		}
-	}
 	// generate possible search strings, convolution-style
-	for i := 0; i < line_num-3; i++ {
-		for j := 0; j < line_len-3; j++ {
+	for i := 0; i < line_num-2; i++ {
+		for j := 0; j < line_len-2; j++ {
 			// diagonal checks
 			matrix := []string{
-				lines[i][j : j+4],
-				lines[i+1][j : j+4],
-				lines[i+2][j : j+4],
-				lines[i+3][j : j+4],
+				lines[i][j : j+3],
+				lines[i+1][j : j+3],
+				lines[i+2][j : j+3],
 			}
-			total += findXMASDiagonally(matrix)
+			total += findXMAS(matrix)
 		}
 	}
 
-	log.Println("XMAS count", total)
+	log.Println("X-MAS count", total)
 }
 
-// count instances of XMAS in the matrix input
-func findXMASDiagonally(input []string) int {
+// count instances of X shaped MAS in the matrix input
+func findXMAS(input []string) int {
 	total := 0
 	// diagonal check
-	word := ""
-	for i := 0; i < 4; i++ { // LTR
-		word += string(input[i][i])
+	wordl, wordr := "", ""
+	for i := 0; i < 3; i++ {
+		wordl += string(input[i][i])
+		wordr += string(input[i][2-i])
 	}
-	if word == "XMAS" || word == "SAMX" {
+	log.Println(wordl, wordr)
+	if wordl == "MAS" && wordr == "SAM" {
 		total++
 	}
-	word = ""
-	for i := 0; i < 4; i++ { // RTL
-		word += string(input[i][3-i])
+	if wordl == "MAS" && wordr == "MAS" {
+		total++
 	}
-	if word == "XMAS" || word == "SAMX" {
+	if wordl == "SAM" && wordr == "SAM" {
+		total++
+	}
+	if wordl == "SAM" && wordr == "MAS" {
 		total++
 	}
 
