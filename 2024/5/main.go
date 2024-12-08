@@ -32,10 +32,12 @@ func main() {
 		}
 	}
 
-	var validPages [][]int
+	var validPages, invalidPages [][]int
 	for _, page := range pages {
 		if isPageValid(page) {
 			validPages = append(validPages, page)
+		} else {
+			invalidPages = append(invalidPages, page)
 		}
 	}
 
@@ -45,10 +47,22 @@ func main() {
 		sum += page[len(page)/2]
 	}
 	log.Println("Sum of middle page numbers from valid pages:", sum)
+
+	// sort the invalid pages by the rules (sorts by reference)
+	for _, page := range invalidPages {
+		fixInvalidPage(page)
+	}
+
+	sum = 0
+	for _, page := range invalidPages {
+		sum += page[len(page)/2]
+	}
+	log.Println("Sum of middle page numbers from corrected pages:", sum)
 }
 
 type pages []int
 
+var rules = map[int]pages{}
 var invRules = map[int]pages{}
 
 func parseRules(line string) {
@@ -61,7 +75,7 @@ func parseRules(line string) {
 	if err != nil {
 		log.Fatal("In parsing rules", err)
 	}
-	// rules[a] = append(rules[a], b)
+	rules[a] = append(rules[a], b)
 	invRules[b] = append(invRules[b], a)
 }
 
@@ -77,4 +91,18 @@ func isPageValid(page []int) bool {
 		}
 	}
 	return valid
+}
+
+func fixInvalidPage(page []int) []int {
+	slices.SortStableFunc(page, func(a, b int) int {
+		if slices.Contains(rules[a], b) {
+			return 0
+		}
+		if slices.Contains(invRules[a], b) {
+			return -1
+		}
+		return 1
+	})
+	slices.Reverse(page) // reverse the page
+	return page
 }
