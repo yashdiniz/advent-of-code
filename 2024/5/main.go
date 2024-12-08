@@ -3,12 +3,13 @@ package main
 import (
 	"aoc2024/internal"
 	"log"
+	"slices"
 	"strconv"
 	"strings"
 )
 
 func main() {
-	lines := internal.OpenInputFile("./test.txt").ReadLines()
+	lines := internal.OpenInputFile("./input.txt").ReadLines()
 	var pages [][]int
 
 	// parse the rules
@@ -31,14 +32,23 @@ func main() {
 		}
 	}
 
-	log.Println(pages)
-	log.Println(rules)
-	log.Println(invRules)
+	var validPages [][]int
+	for _, page := range pages {
+		if isPageValid(page) {
+			validPages = append(validPages, page)
+		}
+	}
+
+	// sum of middle numbers in each valid page
+	sum := 0
+	for _, page := range validPages {
+		sum += page[len(page)/2]
+	}
+	log.Println("Sum of middle page numbers from valid pages:", sum)
 }
 
 type pages []int
 
-var rules = map[int]pages{}
 var invRules = map[int]pages{}
 
 func parseRules(line string) {
@@ -51,6 +61,20 @@ func parseRules(line string) {
 	if err != nil {
 		log.Fatal("In parsing rules", err)
 	}
-	rules[a] = append(rules[a], b)
+	// rules[a] = append(rules[a], b)
 	invRules[b] = append(invRules[b], a)
+}
+
+func isPageValid(page []int) bool {
+	valid := true
+	for i, num := range page {
+		for _, n := range invRules[num] {
+			if valid {
+				valid = !slices.Contains(page[i:], n)
+			} else { // if the page is invalid, we can skip the rest of the checks
+				return false
+			}
+		}
+	}
+	return valid
 }
