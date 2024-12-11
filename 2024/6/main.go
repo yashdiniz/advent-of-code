@@ -7,22 +7,30 @@ import (
 )
 
 func main() {
-	lines := internal.OpenInputFile("./test.txt").ReadLines()
+	lines := internal.OpenInputFile("./input.txt").ReadLines()
 	board_sz_x, board_sz_y := len(lines[0]), len(lines)
-	board, g := getBoard(lines)
-	var visited []location
+	board, g_start := getBoard(lines)
 
-	for {
-		if !slices.Contains(visited, location{g.x, g.y, VISITED}) { // already visited this cell
-			visited = append(visited, location{g.x, g.y, VISITED})
-		}
-		g = g.NextPossibleMove(board)
-		if g.x < 0 || g.x >= board_sz_x || g.y < 0 || g.y >= board_sz_y { // out of bounds
-			break
+	// run one simulation to get the visited array
+	visited, loop := simulateBoard(g_start, board, board_sz_x, board_sz_y)
+	if loop {
+		log.Fatal("Loop detected in first simulation")
+	}
+
+	// simulate guards movement by adding artificial obstacles
+	total_possible_obstacles := 0
+	for _, v := range visited {
+		obs_a := location{v.x, v.y, OBSTACLE}
+		new_board := append(slices.Clone(board), obs_a)
+
+		_, loop := simulateBoard(g_start, new_board, board_sz_x, board_sz_y)
+		if loop {
+			total_possible_obstacles++
 		}
 	}
 
-	log.Println("Visited count:", len(visited), board_sz_x, board_sz_y)
+	// log.Println("Visited count:", len(visited), board_sz_x, board_sz_y)
+	log.Println("Total possible obstacles:", total_possible_obstacles)
 }
 
 type object rune
@@ -123,4 +131,22 @@ func getBoard(lines []string) ([]location, guard) {
 		}
 	}
 	return board, g
+}
+
+func simulateBoard(g guard, board []location, board_sz_x, board_sz_y int) ([]location, bool) {
+	visited, guard_prev_pos := []location{}, []guard{}
+	for { // simulate guards movement within the board
+		if !slices.Contains(visited, location{g.x, g.y, VISITED}) { // already visited this cell
+			visited = append(visited, location{g.x, g.y, VISITED})
+		}
+		g = g.NextPossibleMove(board)
+		if g.x < 0 || g.x >= board_sz_x || g.y < 0 || g.y >= board_sz_y { // out of bounds
+			break
+		}
+		if slices.Contains(guard_prev_pos, g) { // loop detected, arrived at starting point
+			return nil, true
+		}
+		guard_prev_pos = append(guard_prev_pos, g) // add to the list of guard position history
+	}
+	return visited, false
 }
