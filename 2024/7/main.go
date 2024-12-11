@@ -18,31 +18,32 @@ func main() {
 	// calibration result
 	cal_res := []int{}
 
-	// add or multiply opnds such that the result is the same as the rhs
-	for k, v := range inputs {
+	for t, nums := range inputs {
 		// enumerate all possible combinations of operations
-		pos := int(math.Pow(3, float64(len(v)-1)))
+		pos := int(math.Pow(3, float64(len(nums)-1)))
 		for i := 0; i < pos; i++ {
-			res := v[0]
-			flags := numToBase3(i, len(v)-1)
+			acc := nums[0]
+			flags := numToBase3(i, len(nums)-1)
 
-			for i, opnd := range v[1:] {
+			for i, opnd := range nums[1:] {
 				switch flags[i] {
 				case 0: // add
-					res += opnd
+					acc += opnd
 				case 1: // multiply
-					res *= opnd
+					acc *= opnd
 				case 2: // concatenate
-					g, err := strconv.Atoi(strconv.Itoa(res) + strconv.Itoa(opnd))
+					g, err := strconv.Atoi(strconv.Itoa(acc) + strconv.Itoa(opnd))
 					if err != nil {
 						panic(err)
 					}
-					res = g
+					acc = g
 				}
 			}
 
-			if res == k && !slices.Contains(cal_res, k) {
-				cal_res = append(cal_res, k)
+			// only append calibration result if it's correct and not already present
+			if acc == t && !slices.Contains(cal_res, t) {
+				cal_res = append(cal_res, t)
+				break // early exit, solution already found
 			}
 		}
 	}
