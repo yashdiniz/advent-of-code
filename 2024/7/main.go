@@ -3,6 +3,7 @@ package main
 import (
 	"aoc2024/internal"
 	"log"
+	"math"
 	"slices"
 	"strconv"
 	"strings"
@@ -20,17 +21,23 @@ func main() {
 	// add or multiply opnds such that the result is the same as the rhs
 	for k, v := range inputs {
 		// enumerate all possible combinations of operations
-		pos := 1 << (len(v) - 1)
+		pos := int(math.Pow(3, float64(len(v)-1)))
 		for i := 0; i < pos; i++ {
 			res := v[0]
-			flags := bitMaskToFlags(i, len(v)-1)
+			flags := numToBase3(i, len(v)-1)
 
-			// add or multiply opnds such that the result is the same as the rhs
 			for i, opnd := range v[1:] {
-				if !flags[i] {
+				switch flags[i] {
+				case 0: // add
 					res += opnd
-				} else {
+				case 1: // multiply
 					res *= opnd
+				case 2: // concatenate
+					g, err := strconv.Atoi(strconv.Itoa(res) + strconv.Itoa(opnd))
+					if err != nil {
+						panic(err)
+					}
+					res = g
 				}
 			}
 
@@ -47,14 +54,22 @@ func main() {
 	log.Println("Sum of all calibration results:", sum)
 }
 
-func bitMaskToFlags(num int, width int) []bool {
+func numToBase3(num int, width int) []int {
+	flags := make([]int, width)
+	for i := 0; i < width; i++ {
+		flags[i] = num % 3
+		num /= 3
+	}
+	return flags
+}
+
+func numToBase2(num int, width int) []bool {
 	flags := make([]bool, width)
 	for i := 0; i < width; i++ {
 		if num&(1<<i) != 0 {
 			flags[i] = true
 		}
 	}
-	slices.Reverse(flags)
 	return flags
 }
 
