@@ -40,10 +40,10 @@ func parse(line string) [2]int {
 	} else {
 		out[0] = 1
 	}
-	v, err := strconv.ParseInt(line[1:], 10, 32)
+	v, err := strconv.Atoi(line[1:])
 	if err != nil {
 		log.Fatal("failed in parse", err)
 	}
-	out[1] = int(v)
+	out[1] = v
 	return out
 }
