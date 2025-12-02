@@ -16,11 +16,15 @@ func main() {
 		for i := r[0]; i <= r[1]; i++ {
 			v := strconv.Itoa(i)
 			vlen := len(v)
-			if vlen >= 2 && vlen%2 == 0 {
-				l, r := v[:vlen/2], v[vlen/2:]
-				if l == r {
-					log.Print("Invalid found:", i)
+			for j := 1; j < vlen; j++ {
+				if vlen%j != 0 {
+					continue
+				}
+				// string repeat check instead of split check
+				if strings.Repeat(v[:j], vlen/j) == v {
+					log.Print("gen:", strings.Repeat(v[:j], vlen/j), " v:", v, " vlen:", vlen, " j:", j)
 					sum += i
+					break
 				}
 			}
 		}
