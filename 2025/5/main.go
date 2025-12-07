@@ -3,6 +3,7 @@ package main
 import (
 	"aoc2025/internal"
 	"log"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -13,10 +14,8 @@ func main() {
 
 	// parse part 1
 	var ranges [][2]int
-	var vals int
-	for i, line := range lines {
+	for _, line := range lines {
 		if line == "" {
-			vals = i + 1
 			break
 		}
 		d := strings.Split(line, "-")
@@ -31,18 +30,40 @@ func main() {
 		ranges = append(ranges, [2]int{start, end})
 	}
 
-	res := 0
-	for _, line := range lines[vals:] {
-		num, err := strconv.Atoi(line)
-		if err != nil {
-			log.Panic("failed in parse")
+	slices.SortFunc(ranges, func(a, b [2]int) int {
+		return a[0] - b[0]
+	})
+
+	log.Print(len(ranges))
+	for i := 0; i < len(ranges); i++ {
+		if i+1 == len(ranges) {
+			break
 		}
-		for _, r := range ranges {
-			if num >= r[0] && num <= r[1] {
-				res++
-				break
+		item, next := ranges[i], ranges[i+1]
+		if item == next { // delete duplicates
+			ranges[i] = [2]int{0, 0}
+			continue
+		}
+		// if the next item in the range is within current
+		if next[0] >= item[0] && next[0] <= item[1] {
+			if next[1] > item[1] {
+				ranges[i+1] = [2]int{item[0], next[1]}
+			} else {
+				ranges[i+1] = item
 			}
+			ranges[i] = [2]int{0, 0}
 		}
 	}
-	log.Print("Answer:", res)
+	log.Print(len(ranges))
+
+	sum := 0
+	for _, v := range ranges {
+		if v == [2]int{0, 0} {
+			continue
+		}
+		log.Print(v)
+		sum += v[1] - v[0] + 1
+	}
+
+	log.Print("Answer: ", sum)
 }
