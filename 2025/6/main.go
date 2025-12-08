@@ -11,50 +11,56 @@ func main() {
 	input := internal.OpenInputFile("./input.txt")
 	lines := input.ReadLines()
 
-	// parse all the lines into respective arrays
-	ops_at := len(lines) - 1 // operators at the last line
-	var ops []string
-	opnds := make([][]int, ops_at)
-	for i, line := range lines {
-		if i == ops_at {
-			for o := range strings.SplitSeq(line, " ") {
-				if o == "" {
-					continue
-				}
-				ops = append(ops, o)
-			}
-			break
+	// parse all operators
+	ops_at := len(lines) - 1
+	var ops []rune
+	for _, op := range lines[ops_at] {
+		if op == ' ' {
+			continue
 		}
-		for n := range strings.SplitSeq(line, " ") {
-			if n == "" {
-				continue
-			}
-			opnd, err := strconv.Atoi(n)
-			if err != nil {
-				log.Panic("failed at parse in main", err)
-			}
-			opnds[i] = append(opnds[i], opnd)
-		}
+		ops = append(ops, op)
 	}
 
-	// sum the results of each problem
+	var opnds [][]int
+	var acc []int
+	// transpose the operand lines (each column is the operand)
+	for col := 0; col < len(lines[ops_at]); col++ {
+		v := ""
+		for i := range lines[:ops_at] {
+			v += string(lines[i][col])
+		}
+		if strings.TrimSpace(v) == "" {
+			opnds = append(opnds, acc)
+			acc = nil
+			continue
+		}
+		opnd, err := strconv.Atoi(strings.TrimSpace(v))
+		if err != nil {
+			log.Panic("failed at parse")
+		}
+		acc = append(acc, opnd)
+	}
+	opnds = append(opnds, acc)
+
+	log.Print(opnds)
 	sum := 0
 	for i, op := range ops {
-		switch op {
-		case "+":
+		log.Print(string(op), opnds[i])
+		switch op { // get top of stack
+		case '+':
 			acc := 0
-			for _, opnd := range opnds {
-				acc += opnd[i]
+			for _, v := range opnds[i] {
+				acc += v
 			}
 			sum += acc
-		case "*":
+		case '*':
 			acc := 1
-			for _, opnd := range opnds {
-				acc *= opnd[i]
+			for _, v := range opnds[i] {
+				acc *= v
 			}
 			sum += acc
 		}
+		ops = ops[1:] // pop top of stack
 	}
-
 	log.Print("Answer: ", sum)
 }
